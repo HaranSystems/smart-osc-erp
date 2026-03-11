@@ -3,32 +3,50 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Models\Application;
+use App\Services\ApplicationService;
 
 class ApplicationController extends Controller
 {
-    public function index()
+    protected $applicationService;
+
+    public function __construct(ApplicationService $applicationService)
     {
-        return Application::all();
+        $this->applicationService = $applicationService;
     }
 
     public function store(Request $request)
     {
-        $application = Application::create([
-            'tenant_id' => $request->tenant_id,
-            'submitted_by' => $request->submitted_by,
-            'title' => $request->title,
-            'description' => $request->description,
-            'status' => 'submitted',
-            'submitted_at' => now()
+        $validated = $request->validate([
+            'tenant_id' => 'required|integer|exists:tenants,id',
+            'submitted_by' => 'required|integer|exists:users,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string'
         ]);
+
+        $application = $this->applicationService->create($validated);
+
+        return response()->json($application, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+
+        $application = $this->applicationService->update($application, $request->all());
 
         return response()->json($application);
     }
 
-    public function show($id)
+    public function destroy($id)
     {
-        return Application::findOrFail($id);
+        $application = Application::findOrFail($id);
+
+        $this->applicationService->delete($application);
+
+        return response()->json([
+            'message' => 'Application deleted successfully'
+        ]);
     }
 }
