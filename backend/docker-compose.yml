@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-osc-app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_osc_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
