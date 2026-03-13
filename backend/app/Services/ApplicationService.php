@@ -3,29 +3,37 @@
 namespace App\Services;
 
 use App\Models\Application;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ApplicationService
 {
-    public function create(array $data)
+    public function listAll(int $perPage = 10): LengthAwarePaginator
     {
-        return Application::create([
-            'tenant_id' => $data['tenant_id'],
-            'submitted_by' => $data['submitted_by'],
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'status' => 'submitted',
-            'submitted_at' => now()
-        ]);
+        return Application::latest()->paginate($perPage);
     }
 
-    public function update(Application $application, array $data)
+    public function create(array $data): Application
+    {
+        $data['status'] = $data['status'] ?? 'pending';
+        $data['submitted_at'] = $data['submitted_at'] ?? now();
+
+        return Application::create($data);
+    }
+
+    public function findById(int $id): Application
+    {
+        return Application::findOrFail($id);
+    }
+
+    public function update(Application $application, array $data): Application
     {
         $application->update($data);
-        return $application;
+
+        return $application->refresh();
     }
 
-    public function delete(Application $application)
+    public function delete(Application $application): bool
     {
-        $application->delete();
+        return (bool) $application->delete();
     }
 }
