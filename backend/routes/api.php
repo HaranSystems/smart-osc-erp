@@ -17,3 +17,4 @@ Route::get('/applications/{id}', [ApplicationController::class, 'show']);
 Route::put('/applications/{id}', [ApplicationController::class, 'update']);
 Route::patch('/applications/{id}', [ApplicationController::class, 'update']);
 Route::delete('/applications/{id}', [ApplicationController::class, 'destroy']);
+Route::prefix('v1')->group(function () {Route::apiResource('applications', ApplicationController::class);});
